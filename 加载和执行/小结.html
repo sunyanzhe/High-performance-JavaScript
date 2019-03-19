@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    管理游览器中的JavaScript代码是一个棘手的问题,因为代码执行构成会阻塞浏览器的其他进程,比如用户页面绘制<br>
+    每次遇到scirpt标签,页面都必须停下来等待代码下载(如果是外链文件并执行),然后继续处理其他部分<br>
+    尽管如此,还是有几种方法能减少JavaScript对性能的影响: <br>
+    1./body闭合标签之前,将所有的script标签放到页面底部.这能确保脚本执行前页面已经完成了渲染<br>
+    2.合并脚本.页面中script标签越少,加载也就越快,响应也更迅速.无论外链文件还是内嵌脚本都是如此<br>
+    3.有多种无阻塞下载JavaScript的方法<br> 
+     a.使用script标签的defer async属性<br>
+     b.使用动态创建的script元素来下载并执行代码<br>
+     c.使用xhr对象下载JavaScript代码并注入页面<br>
+</body>
+</html

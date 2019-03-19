@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    YUI3有一个核心设计理念是:由页面中的少量代码来加载丰富的功能组件,在页面中使用YUI3,只需引入YUI种子文件<br>
+    它的功能为从雅虎CDN下载任意其他的YUI组件<br>
+    比如,你要是用DOM工具包,只需在YUI的use()方法中声明'dom'并且提供回调函数即可<br>
+    <code>
+        YUI().use('dom', function() {
+            Y.DOM.addClass(document.body, 'loaded');
+        })
+    </code>
+    以上代码创建了一个YUI对象的新实例,并调用它的use方法<br>
+    种子文件包含了文件名及依赖关系的所有信息,因此指定dom实际上会拼接出来带有所有依赖文件组合的URL <br>
+    然后由动态脚本元素加载进来并执行<br>
+    当所有代码都准备完成,回调方法会被执行,并接收当前YUI实例作为参数,于是你就可以立即使用新下载的功能<br>
+
+    
+</body>
+</html>

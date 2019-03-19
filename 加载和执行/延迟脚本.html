@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    defer 和 async都是采用并行下载<br>
+    区别是defer需要等待页面完后才能后执行. <br>
+    async是加载完成后自动执行. <br>
+    <script type="text/javascript" src='loader.js' defer></script>
+    <script defer>
+        console.log('defer')
+    </script>
+    <script>
+        console.log('script')
+    </script>
+    <script>
+        window.onload = function() {
+            console.log('load')
+        }
+    </script>
+    执行顺序为 script defer load
+</body>
+</html>

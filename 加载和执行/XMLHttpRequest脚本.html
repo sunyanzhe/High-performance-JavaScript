@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    另一种无阻塞加载脚本的方法是使用XMLHttpRequest对象获取脚本并注入页面中<br>
+    此技术会先创建一个XHR对象,然后用它下载JavaScript文件,最后通过创建动态script元素将代码注入页面中
+
+    <script>
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'loader.js', true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                if (xhr.status >= 200 && xhr.status < 300 || xhr.status == 304) {
+                    var script = document.createElement('scirpt');
+                    script.type = 'text/javascript';
+                    script.text = xhr.responseText;
+                    document.body.appendChild(script);
+                }
+            }
+        };
+        xhr.send(null);
+    </script>
+
+    当收到有效响应,会创建一个script元素,设置该元素的text属性为从服务端获取的responseText <br>
+    这样实际上相当于创建一个带有内联脚本的script标签<br>
+    一旦新创建的script元素被添加到页面,代码就会立即执行然后准备就绪<br>
+
+    这个方法的主要优点,可以下载JavaScript代码但不执行<br>
+    由于代码是在script标签之外返回的,因此他下载后不会立即执行<br>
+    这使得你可以把脚本的执行推迟到你准备好的时候<br>
+    还有一个优点是,同样的代码在所有朱浏览器中无一例外都能正常工作<br>
+</body>
+</html>

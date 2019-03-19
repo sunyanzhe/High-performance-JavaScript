@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        var script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = 'loader.js';
+        document.getElementsByTagName('head')[0].appendChild(script);    
+    </script>
+    文件在该元素被添加到页面时开始下载<br>
+    这种技术的重点在于:无论何时启动下载,文件的下载和执行不会阻塞页面其他进程<br>
+    可以将代码放到head区域而不会影响页面其他部分<br>
+    使用动态脚本下载文件时,返回的代码通常会立刻执行<br>
+    当脚本'自执行'时,这种机制运行正常<br>
+    但是,当代码只包含供页面其他脚本调用的接口时,就会有问题<br>
+    这种情况下就必须确保脚本下载完成且准备就绪<br>
+    这可以用动态script节点触发的时间来实现<br>
+    详情见loader.js <br>
+</body>
+</html>
