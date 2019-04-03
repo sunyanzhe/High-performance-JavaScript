@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>dom</title>
+</head>
+<body>
+    <pre>
+        昂贵的集合
+        一个意外的死循环
+        var alldivs = document.getElementsByTagName('div');
+        for (var i = 0; i &lt; alldivs.length; i++) {
+            document.body.appendChild(document.createElement('div'));
+        }
+
+
+        访问集合元素时使用局部变量
+        //较慢
+        function collextionGlobal() {
+            var coll = document.getElementsByTagName('div'),
+                len = coll.length,
+                name = '';
+            for (var i = 0; i &lt; len; i++) {
+                name = document.getElementsByTagName('div')[i].nodeName;
+                name = document.getElementsByTagName('div')[i].nodeType;
+                name = document.getElementsByTagName('div')[i].tagName;
+            }
+            return name;
+        }
+
+        //较快
+        function collextionGlobal() {
+            var coll = document.getElementsByTagName('div'),
+                len = coll.length,
+                name = '';
+            for (var i = 0; i &lt; len; i++) {
+                name = coll('div')[i].nodeName;
+                name = coll('div')[i].nodeType;
+                name = coll('div')[i].tagName;
+            }
+            return name;
+        }
+        //最快
+        function collextionGlobal() {
+            var coll = document.getElementsByTagName('div'),
+                len = coll.length,
+                name = '';
+            for (var i = 0; i &lt; len; i++) {
+                var elem = coll[i];
+                name = elem.nodeName;
+                name = elem.nodeType;
+                name = elem.tagName;
+            }
+            return name;
+        }
+
+
+        获取Dom元素
+        通常需要从某一个DOM元素开始,操作周围的元素,或者递归查找所所有子节点
+        可以使用childNodes得好元素集合,或者用nextsibling来获取每一个相邻的元素
+
+        参考一下两个等价的例子,都是以非递归的方式遍历元素子节点
+        function textNextSibling() {
+            var el = document.getElementById('mydiv'),
+                ch = el.firstChild,
+                name = '';
+            do {
+                name = ch.nodeName
+            } while (ch = ch.nextSibling);
+            return name;
+        }
+
+        function testChildNodes() {
+            var el = document.getElementById('mydiv'),
+                ch = el.childNodes,
+                len = ch.length,
+                name = '';
+            for (var i = 0; i &lt; len; i++) {
+                name = ch[i].nodeName;
+            }
+            return name;
+        }
+        
+        选择器API
+        var elements = document.querySelectorAll('#menu a');
+
+        elements的值包含一个引用列表, 指向位于id='menu'的元素之中的所有a元素.
+        querySelectorAll()方法使用CSS选择器作为参数并返回一个NodeList————包含着匹配节点的类数组对象
+        这个方法不会反悔HTML集合,因此返回的节点不会对应实时的文档结构
+        这也避免了HTML集合引起的性能问题
+        
+        var elements = document.getElementById('menu').getElementsByTagName('a');
+
+        还要在转成数组
+    </pre>
+</body>
+</html>

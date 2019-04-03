@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    计算机科学中有一个经典问题是通过改变数据的存储位置来获得最佳的读写性能. <br>
+    数据存储的位置关系到代码执行过程中数据的检索速度<br>
+    在JavaScript中,这个问题相对简单,因为只有几种存储方案可供选择<br>
+    不过,和其他编程语言一样,数据的存储位置会很大程度上影响其读取速度<br>
+    JavaScript中有下面四种基本的数据存取位置<br>
+
+    1.字面量<br>    
+        字面量只代表自身,不存储在特定位置. Javascript中的字面量有: 字符串 数字 布尔值 对象 数组 函数 正则表达式 以及特殊的null和undefine <br>
+    2.本地变量<br>
+        开发人员使用关键字var定义的数据存储单元<br>
+    3.数组元素<br>
+        存储在JavaScript数组对象内部,以数字作为索引<br>
+    4.对象成员<br>
+        存储在Javascript对象内部,以字符串作为索引<br>
+    每一种数据存储的位置都有不同的读写消耗<br>
+    大多情况下,从一个字面量和一个局部变量中存取数据的性能差异是微不足道的<br>
+    访问数组元素和对象成员的代价会更高一点<br>
+    
+</body>
+</html>
