@@ -94,6 +94,237 @@
         var elements = document.getElementById('menu').getElementsByTagName('a');
 
         还要在转成数组
+
+        重绘和重排
+        浏览器下载完页面中所有组件 HTML JavaScript CSS 图片之后会解析并生成两个内部数据结构
+        DOM树: 表示页面机构
+        渲染树: 表示DOM节点该如何显示
+
+        DOM树中的每一个需要显示的节点在渲染树中至少存在一个对应的节点(隐藏的DOM元素在渲染书中没有对应的节点)
+        渲染树种的节点被称为'帧'(frame)或者'盒'(box), 符合css模型的定义,理解页面元素为一个具有内边距,外边距边框和位置的盒子
+        一旦DOM和渲染书构造完成,浏览器就开始显示(绘制'paint')页面元素
+
+        当DOM的变化影响了元素的几何属性(宽和高)————比如改变边框宽度或给段落增加文字,导致行数增加————浏览器需要重新计算元素的几何属性
+        同样其他元素的几何属性和位置也会因此受到影响。
+        浏览器会使渲染书中受到影响的部分失效，并重新构造渲染树
+        这个过程就叫做重排(reflow)
+        完成重排后,浏览器会重新绘制受影响的部分到屏幕中,该过程叫做重绘(repaint);
+
+        并不是所有的DOM变化都会影响几何属性
+        例如,改变一个元素的背景色并不会影响他的宽和高
+        这样,只会发生一次重绘(不需要重排),因为元素的布局并没有改变
+
+        重绘和重排的操作都是代价昂贵的操作
+        他们会导致Web应用程序的UI反应迟钝,所以应该尽可能减少这类过程的发生
+
+        重排何时发生
+        当页面布局和几何属性改变时就需要'重排'. 下属情况会出现重排
+            1.添加或删除DOM元素
+            2.元素位置改变
+            3.元素尺寸改变(包括: 外边距, 内边距, 宽, 高, 边框厚度等属性改变)
+            4.内容改变,例如:文本改变或者图片被另一个不同尺寸的图片代替
+            5.页面渲染器初始化
+            6.浏览器尺寸改变
+        根据改变的范围和程度,渲染树中或大或小的对应的部分也需要重新计算
+        有些改变触发整个页面的重排: 比如当滚动条出现
+
+        渲染树变化的排队和刷新
+        由于每次重排都会产生计算消耗,大多数浏览器通过队列化修改并批量执行来优化重排过程
+        然而, 你可能会强制刷新队列并要求计划任务立即执行
+        获取布局信息的操作会导致队列刷新
+
+        1.offsetTop offsetLeft offsetWidth offsetHeight
+        2.scrollTop scrollLeft scrollWidth offsetHeight
+        3.clientTop clientLeft clientWidth clientHeight
+        4.getComputedStyle()
+
+        以上属性和方法需要返回最新的布局信息,因此浏览器不得不执行渲染队列中'待处理变化'并触发重排以返回正确的值
+        在修改样式的过程中,最好避免使用上面列出的属性
+        他们会刷新渲染队列,即使你是在获取最近未发生改变的或者最新改变无关的布局信息
+
+        例子:
+        //定义变量并获取样式
+        var computed,
+            tmp = '',
+            bodystyle = document.body.style;
+        if (document.body.currentStyle) {       //IE
+            computed = document.body.currentStyle;
+        } else {
+            computed = docucment.defaultView.getComputedStyle(document.body, '');
+        }
+        //修改同一个属性低效的方式
+        //然后获取样式信息
+        bodystyle.color = 'red';
+        tmp = computed.backgroundColor;
+        bodystyle.color = 'white';
+        tmp = computed.backgroundImage;
+        bodystyle.color = 'green';
+        tmp = computed.backgroundAttachment;
+
+        例子中,body元素的color改变了三次,每次修改后都会读取一个computed样式属性
+        读取的属性都与改变的属性无关
+        然而浏览器却需要刷新渲染队列并重排,因为computed的样式属性被其你去了
+
+        一个更有效的方法是不要再布局信息改变时查询它
+        如果读取computed样式的代码被移到末尾,
+        bodystyle.color = 'red';
+        bodystyle.color = 'white';
+        bodystyle.color = 'green';
+        tmp = computed.backgroundColor;
+        tmp = computed.backgroundImage;
+        tmp = computed.backgroundAttachment;
+
+        在所有的浏览器中,该方法更快
+
+        最小化重排和重构
+        重绘和重排可能代价非常昂贵,因此一个好的提高程序响应速度的策略就是减少此类操作的发生
+        为了减少发生的次数,应该合并多次对DOM和样式的修改,然后一次性处理掉
+
+        改变样式
+            var el = document.getElementById('mydiv');
+            el.style.borderLeft = '1px';
+            el.style.borderRight = '2px';
+            el.style.padding = '5px';
+
+        这三个样式属性的改变,么一个都会影响元素的几何结构. 
+        最糟糕的情况下,会导致浏览器触发三次重排
+        大部分现代浏览器为此做了优化,只会触发一次重排
+        但是在旧的浏览器中或者有一个分离的异步处理程序时(比如计时器),仍然效率低下
+        如果在上面代码执行时,有其他代码请求布局信息,这会导致触发三次重排
+        而且,这段代码四次访问DOM,可以被优化
+
+        一个能够达到同样效果且效率更高的方法是: 合并所有的改变然后一次性处理,这样只会修改DOM一次.使用cssText属性就可以实现
+        var el = document.getElementById('mydiv');
+        el.style.cssTest = 'border-left: 1px; border-right: 2px; padding: 5px;'
+
+        如果想保留现有样式,可以把它附加在cssText字符串后面
+        el.style.cssText += '; border-left: 1px;';
+
+        另一种一次性修改样式的方法就是css的class
+
+        
+        批量修改DOM
+        当你需要对DOM元素进行一系列操作的时候,可以通过以下步骤来减少重绘和重排的次数:
+        1.使元素文档流
+        2.对其应用多重改变
+        3.把元素带回文档中
+
+        该过程会触发两次重排————第一步和第三步. 如果忽略这两步,那么在第二步所产生的任何修改都会触发一次重排
+
+        有三种方法可以使DOM脱离文档:
+        1.隐藏元素,应用修改,重新显示
+        2.使用文档片段(document fragment)在当前DOM之外创建一个子树,再把它拷贝回文档
+        3.将原始元素拷贝到一个脱离文档的节点中,修改副本,完成后在替换原始元素
+
+        var data = [
+            {
+                name: 'Nicholas',
+                url: 'http://nczonline.net'
+            }, {
+                name: 'Ross',
+                url: 'http://techfoolery.com'
+            }
+        ]
+
+        function appendDataToElement(appendToElement, data) {
+            var a, li;
+            for (var i = 0, len = data.length; i &lt; len; i++) {
+                a = document.createElement('a');
+                a.href = data[i].url;
+                li = document.createElement('li');
+                li.appendChild(a);
+                appendToElement.appendChild(li);
+            }
+        }
+
+        var ul = document.getElementById('mylist');
+        appendDataToElement(ul, data);
+
+        这种方法,data数组的每一个新条目被附加到当前DOM树时都会导致重排
+
+        方法一
+        var ul = document.getElementById('mylist');
+        ul.style.display = 'none';
+        appendDataToElement(ul, data);
+        ul.style.display = 'block';
+
+        方法二
+        var fragment = document.createDocumentFragment();
+        appendDataToElement(fragment, data);
+        ul.appendChild(fragment);
+
+        方法三
+        var old = document.getElementById('mylist');
+        var clone = old.cloneNode(true);
+        appendDataToElement(clone, data);
+        old.parentNode.replaceChild(clone, old);
+
+        推荐使用方法二
+
+        缓存布局信息
+        //低效
+        myElement.style.left = 1 + myElement.offsetLeft + 'px';
+        myElement.style.top = 1 + myElement.offsetTop + 'px';
+        if (myElement.offsetLeft >= 500) {
+            stopAnimation();
+        }
+
+        /高效
+        current++;
+        myElement.style.left = current + 'px';
+        myElement.style.top = current+ 'px'
+        if (current >= 500) {
+            stopAnimation();
+        }
+
+        让元素脱离动画流
+        步骤
+            1.使用绝对定位页面上的动画元素,将其脱离文档流
+            2.让元素动起来,当它扩大时,会临时覆盖部分页面,但是这只是页面的一个小区域的重回过程,不会产生重排并重绘页面的大部分内容
+            3.当动画结束时恢复定位,从而只会下移一次文档的其他元素
+
+        事件委托
+        一个简单而优雅的处理DOM事件的技术就是事件委托
+        他是基于这样的一个事实: 事件逐层冒泡并能被父级元素捕获.
+        使用事件委托,只需给外层元素绑定一个处理器,就可以处理其子元素上触发的所有事件
+        根据DOM标准,每个事件都会经历三个阶段:捕获 到达目标 冒泡
+
+        document.getElementById('menu').onclick = function(e) {
+            e = e || window.event;
+            var target = e.target || e.srcElement;
+            var pageid, hrefparts;
+
+            //只关心href,非链接点击则退出
+            if (target.nodeName !== 'A') return;
+
+            //从连接中找出页面ID
+            pageid = target.href.slice(1);
+            pageid = pageid.replace('.html', '');
+
+            //更新页面
+            ajaxRequest('xhr.php?page=' + pageid, updatePageContents);
+
+            //浏览器阻止默认行为并取消冒泡
+            if (typeof e.preventDefault === 'function') {
+                e.preventDefault();
+                e.stopPropagation();
+            } else {
+                e.returnValue = false;
+                e.cancelBubble = true;
+            }
+        }
+
+        小结
+        访问和操作DOM是现在Web应用的重要部分
+        但每次穿越链接ECMAScript和DOM两个岛屿之间的桥梁,都会被收'过桥费'
+        为了减少DOM编程带来的性能损失, 请记住以下几点
+        1.最小化DOM访问次数, 尽可能在JavaScript端处理
+        2.如果需要多次访问某个DOM节点, 请驶入局部变量存储它的引用
+        3.小心处理HTML集合,因为他们实时连系这底层文档, 把集合的长度缓存到一个变量中,并在迭代中使用他们,如果需要经常操作集合,建议拷贝到数组中
+        4.如果可能的话,使用速度更快的API
+        5.要留意重绘和重排,批量修改样式时, '离线'操作DOM树,使用缓存,并减少访问布局信息的次数
+        6.动画中使用绝对定位,使用拖放代理
+        7.使用时间委托来减少事件处理器的数量
     </pre>
 </body>
 </html>
