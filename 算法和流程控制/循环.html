@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <pre>
+    1.减少迭代工作量
+        for (var i = 0; i &lt; item.length; i++) {
+            process(item[i]);
+        }
+        在上面的循环中, 每次运行循环体时都会产生如下操作:
+        1. 在控制条件中查找一次属性(item.length)
+        2. 在控制条件中执行一次数值比较(i &lt; items.length)
+        3. 一次比较操作查看控制条件的结果是否为true(i &lt; items.length === true);
+        4. 一次自增操作(i++)
+        5. 一次数组查找(items[i])
+        6. 一次函数调用(process(items[i]))
+
+        优化循环的第一步是要减少对象成员及数组项的查找次数
+        for (var i = 0, len = item.length; i &lt; len; i++) {
+            process(item[i]);
+        }
+        重写后的循环只会在循环运行前对数组长度进行一次属性查找
+        这使得控制条件可直接读取局部变量,速度更快
+
+    2.减少迭代次数
+        Duff's device
+        是一个循环体展开技术,他使得一次迭代中实际上执行了多次迭代则操作
+        var len = array.length,
+            iterations = Math.floor(len / 8),
+            startAt = len % 8,
+            i = 0;
+        do {
+            switch(startAt) {
+                case 0: process(array[i++]);
+                case 7: process(array[i++]);
+                case 6: process(array[i++]);
+                case 5: process(array[i++]);
+                case 4: process(array[i++]);
+                case 3: process(array[i++]);
+                case 2: process(array[i++]);
+                case 1: process(array[i++]);
+            }
+            startAt = 0;
+        } while(--iterations);
+
+        其背后理念是:每次循环中最多可调用8次process
+        循环的迭代次数为总数除以8
+        由于不是所有的数组都能被8整除, 变量startAt用来存放余数, 表示第一次循环中应调用多少次process()
+        如果是12次,那么第一次循坏会调用process()4次, 第二次循环调用process()8次,用两个循环代替了12次循环
+
+        此算法一个稍快的版本取消了switch语句, 并将余数处理和主循环分开
+        
+    </pre>
+</body>
+</html>
