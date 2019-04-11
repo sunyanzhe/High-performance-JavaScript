@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <pre>
+        有些时候条件语句的最佳方案是避免使用if-else和switch
+        当有大量离散值需要测试时, if-else和switch比使用查找变慢很多
+        JavaScript中可以使用数组和普通对象来构建查找表,通过查找表访问数据比用if-else或swtich快很多
+        特别是在条件语句数量很大的时候
+        swtich(value) {
+            case 0:
+                return result0;
+            case 1:
+                return result1;
+            case 2:
+                return result2;
+            case 3:
+                return result3;
+            case 4:
+                return result4;
+            case 5:
+                return result5;
+            case 6:
+                return result6;
+            case 7:
+                return result7;
+            case 8:
+                return result8;
+            case9:
+                return result9;
+        }
+        switch表达式代码所占的空间可能与它的重要性不成比例
+        整个结构可以用一个数组查找表来代替
+        var result = [result0, result1, result2, result3, result4, result5, result6, result7, result8, result9];
+        return result[value];
+
+        
+    </pre>
+    <script src="merge.js"></script>
+</body>
+</html>

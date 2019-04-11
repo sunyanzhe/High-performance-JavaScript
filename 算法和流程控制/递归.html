@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>递归</title>
+</head>
+<body>
+    <pre>
+        function factorial(n) {
+            if (n == 0) {
+                return 1;
+            } else {
+                return n * facorial(n - 1);
+            }
+        }
+        递归函数的潜在问题是终止条件不明确或缺少终止条件会导致函数长时间运行
+        并使用用户界面处于假死状态
+        而且递归函数还可能遇到浏览器的'调用栈大小限制'(call stack size limites)
+
+    调用栈限制
+        JavaScript引擎支持的递归数量与JavaScript调用栈大小直接相关
+        只有IE例外,它的调用栈与系统空闲内存有关
+        而其他所有浏览器都有固定数量的调用栈限制
+        大多数现代浏览器的调用栈数量比老版本浏览多出很多(比如Safari2的调用栈大小只有100)
+
+        当使用了太多的递归,甚至超过最大调用栈容量时,浏览器会报告一下出错信息
+        IE: 'Stack overflow at line x'
+        FireFox: 'Too much recusion'
+        Safari: 'Maximum call stack exceeded'
+        Opera: 'Abort(control stack overflow'
+
+        Chrome是唯一不显示调用栈溢出错误的浏览器
+        在某些浏览器中,可以用try-catch捕获调用栈溢出
+        异常类型也因浏览器而不同
+        在Firefox中, 它是一个内部错误(InteranlError)
+        在Safari和Chrome中, 他是一个RangeError
+        在IE中,抛出一个常规Error类型
+        Opera只会中止JavaScript引擎,不抛出错误
+        这使得我们能在JavaScript中正确处理这些错误:
+        try{
+            recurse()
+        }catch(ex) {
+            alert('too much recursion!');
+        }
+
+        如果不捕获它,这些错误会像其他错误一样冒泡传递(在Firefox中, 冒泡停止于Firebug和错误控制台)
+        在Safari/Chrome中错误会显示在JavaScript控制台
+        只有IE例外,他不但显示一个JavaScript错误,还会弹出一个类似alert的浸膏的对话框显示栈溢出信息
+
+        提示:尽管在JavaScript中捕获这些错误是有可能的,但并不推荐这样做,那些有潜在的调用栈溢出问题的脚本就不应该发布上线
+
+    递归模式
+        当你遇到调用栈大小限制时,第一步应该先检查代码中的递归实例
+        为此,有两种递归模式值得注意
+        第一种是以前面提到的factorial()函数为代表的直接递归模式,即函数调用自身
+        function recurse() {
+            recurse()
+        }
+        recurse();
+
+        发生错误时,这个模式很容易定位.
+
+        另一种模式称为'隐伏模式', 它包含两个函数:
+        function first() {
+            second()
+        }
+        function second() {
+            first()
+        }
+        first();
+        
+        在这种递归模式中,两个函数相互调用,形成一个无限循环
+        
+    </pre>
+</body>
+</html>
