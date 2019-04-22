@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <button id="my-button">click me</button>
+    <p id='notice'>hahahahaha</p>
+    <pre>
+    定时器基础
+        定时器与UI线程的交互方式有助于把运行耗时较长的脚本拆分为较短的片段
+        调用setTimeout或setInterval会告诉JavaScript引擎先等待一定时间,然后添加一个JavaScript任务到UI队列
+        
+        function greeting() {
+            alert('hello world!');
+        }
+        setTimeout(greeting, 250);
+
+        这段代码在250后, 向UI队列插入一个执行greeting()函数的JavaScript任务
+        在这个时间点之前, 所有其他UI更新和JavaScript任务都会执行,
+        第二个参数表示任务何时被添加到UI队列, 而不是一定会在这段时间后执行,
+        这个任务会等待队列中其他所有任务执行完毕才会执行, 考虑如下代码.
+
+        var button = document.getElementById('my-button');
+        button.onclick = function() {
+            oneMethod();
+            setTimeout(function() {
+                document.getElementById('notice').style.color = 'red';
+            }, 250)
+        }
+
+        当例子中的按钮被点击, 它会调用一个方法并设置一个定时器
+        改变notice元素字体的颜色的代码被包含在定时器中,并设置为在250毫秒后加入队列
+        这250毫秒从setTimeout调用时开始计算,而不是在整个函数运行结束后才开始
+        因此, 如果setTimeout在时间点n被调用,那么执行定时器代码的JavaScript任务会在第n+250的时候加入UI队列
+
+        请记住,定时器代码之后再创建它的函数执行完成之后,才有可能被执行
+        例如, 如果前面代码中定时器延时变小, 然后在创建定时器之后有调用另一个函数
+        那么定时器代码有可能在onclick事件处理完成之前加入队列
+
+        button.onclick = function() {
+            oneMethod();
+            setTimeout(function() {
+                document.getElementById('notice').style.color = 'red';
+            }, 50);
+            anotherMethod()
+        }
+
+        如果anthoerMethod的执行时间超过50毫秒, 那么定时器代码已经在onclick处理完成前加入队列.
+        这样做的影响是定时器代码会在onclick事件处理器执行完成后立刻执行,甚至察觉不出延迟
+
+        如果setTimeout中的函数需要消耗比定时器延时更长的运行时间, 那么定时器代码中的延时几乎是不可见的
+        
+        无论发生何种情况,创建一个定时器会造成UI线程暂停,如同他从一个任务切换到下一个任务
+        因此, 定时器代码会重置所有相关的浏览器限制, 包括长时间运行脚本定时器
+        此外, 调用栈也是定时器的代码中重置为0
+        这一特性使得定时器成为长时间运行JavaScript代码理想的跨浏览器解决方案
+
+        提示: setInterval函数和setTimeout几近相同, 除了前者会重复添加JavaScript任务到UI队列
+            他们最主要的区别是,如果UI队列中已经存在由同一个setInterval创建的任务, 那么后续任务不会被添加到UI队列中
+        
+        
+    </pre>
+    <script>
+        function greeting() {
+            alert('hello world!');
+        }
+        function oneMethod() {
+            console.log(1);
+        }
+        setTimeout(greeting, 250);
+
+        var button = document.getElementById('my-button');
+        button.onclick = function() {
+            oneMethod();
+            setTimeout(function() {
+                document.getElementById('notice').style.color = 'red';
+            }, 250)
+        }
+    </script>
+</body>
+</html>
