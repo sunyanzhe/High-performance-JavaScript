@@ -62,7 +62,28 @@
         提示: setInterval函数和setTimeout几近相同, 除了前者会重复添加JavaScript任务到UI队列
             他们最主要的区别是,如果UI队列中已经存在由同一个setInterval创建的任务, 那么后续任务不会被添加到UI队列中
         
-        
+    
+        记录代码运行时间
+            有时每次只执行一个任务的效率不高
+            考虑这种情况: 如处理一个长度为1000项的数组, 没处理一项需时1毫秒
+            如果每个定时器制只处理一项,且在两次处理之前产生25毫秒的延迟,这就意味着处理数组需要的总时间(25 + 1) *1000 = 26000(26秒)
+            如果一次批量处理50个, 每批之间有25毫秒延迟呢? 整个处理过程事件变成(1000/50)*25 + 1000 = 15000(15秒)
+
+        定时器与性能
+            定时器会让js代码整体性能发生翻天覆地的变化,但是过度使用也会对性能造成负面影响,
+            本节中的代码使用了定时器序列, 同一时间只有一个定时器存在, 只有当这个定时器结束是,才会新建一个
+            通过这种方法使用定时器不会导致性能问题
+
+            当多个重复的定时器同时创建往往会出现性能问题
+            因为只有一个UI线程,而所有的定时器都在争夺运行时间
+            Google Mobile的Neil Thomas将此问题作为度量Iphone和Android平台上移动版Gmail应用性能的方法进行了研究
+
+            Thomas发现那些间隔在1s或1s以上的低频率的重复定时器几乎不会影响Web应用的响应速度
+            这种情况下定时器延迟远远超过UI线程产生瓶颈的值,因此可安全地重复使用
+            当多个重复定时器使用较高的频率(100到 200毫秒之间)时,Thomas发现移动版Gmail应用会明显变慢, 响应也不及时
+
+            在Web应用中限制高频率重复定时器的数量,作为代替方案, Thomas建议创建一个独立的重复定时器,每次执行多个操作
+
     </pre>
     <script>
         function greeting() {
@@ -70,6 +91,9 @@
         }
         function oneMethod() {
             console.log(1);
+        }
+        function process(i) {
+            console.log(i);
         }
         setTimeout(greeting, 250);
 
@@ -80,6 +104,44 @@
                 document.getElementById('notice').style.color = 'red';
             }, 250)
         }
+        var items = [1,2,3,4,5];
+        var todo = items.slice();
+        setTimeout(function() {
+            process(todo.shift());
+            if (todo.length > 0) {
+                setTimeout(arguments.callee, 25)
+            } 
+        }, 25);
+        
+        function processArray(items, process, callback) {
+            var todos = items.slice();
+            setTimeout(function() {
+                process(todos.shift());
+                if (todos.length > 0) {
+                    setTimeout(arguments.callee, 25);
+                } else {
+                    callback(items);
+                }
+            }, 25)
+        }
+
+        function timedProcessArray(items, process, callback) {
+            var todo = items.concat();
+            setTimeout(function() {
+                var start = +new Date();
+                do {
+                    process(todo.shift());
+                } while (todo.length > 0 && (+new Date() - start < 50));
+                
+                if (todo.length > 0) {
+                    setTimeout(arguments.callee, 25);
+                } else {
+                    callback(items);
+                }
+            }, 25);
+        }
+
+
     </script>
 </body>
 </html>

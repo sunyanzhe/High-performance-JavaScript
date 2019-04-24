@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <pre>
+        Worker运行环境
+            由于Web Worker没有绑定UI线程,这也意味着他们不能访问浏览器的许多资源
+            JavaScript和UI共享同一线程的部分原因是他们之间互相访问频繁,因此这些任务时空会导致糟糕的用户体验
+            WebWorker从外部线程中修改Dom会导致用户界面出现错误
+            但是每个Web Worker都有自己的全局运行环境, 其功能只是JavaScript特性的一个子集
+            Worker运行环境由如下部分组成
+                1.navigator对象,有四个属性: appName, appVersion, userAgent和platform
+                2.location对象 与window.location相同, 但是属性都为只读
+                3.self对象,指向全局worker对象
+                4.importScripts()方法,用来加载Worker所用到的外部JavaScript文件
+                5.所有的ECMAScript对象, 如Object,Array, Date等
+                6.XMLHttpRequest构造器
+                7.setTimeout和setInterval
+                8.close()方法, 立刻停止Worker运行
+            由于Worker有着不同的全局运行环境
+            因此你无法从JavaScript代码中创建他
+            事实上,你需要创建一个完全独立的JavaScript文件, 其中包含了需要在Worker中运行的代码
+            要创建网页工人线程,你必须穿入这个JavaScript文件的URL
+            
+            var worker = new Worker('code.js')
+            
+            此代码一旦执行,将为这个文件创建一个新的线程和一个新的worker的运行环境
+            该文件会被异步下载,知道文件下载并执行完成后,才会启动此worker
+
+        与Worker通信
+            Worker与网页代码通过事件接口进行通信.
+            网页代码可以通过postMessage()方法给Worker传递数据, 它接受一个参数, 即需要传递给Worker的数据
+            此外,Worker还有一个用来接收新机的onmessage事件处理器
+            例如
+            var worker = new Worker('code.js');
+            worker.onmessage = function(event) {
+                alert(event.data);
+            };
+            worker.postMessage('Nicholas');
+
+            Worker通过触发message事件来接受数据
+            定义onmessage事件处理器后,该事件对象就具有一个data属性用于存放传入的数据
+            Worker可通过他自己的postMessage()方法把信息回传给页面
+
+        实际应用
+        解析一个很大的JSON字符串
+            var worker = new Worker('jonsparser.js');
+            //数据就位时,调用事件处理器
+            worker.onmessage = function() {
+                var jsonData = event.data;
+                evaluateData(jsonData);
+            }
+            worker.postMessage(jsonText);
+
+
+            //jsonparser.js代码
+            self.onmessage = function(event) {
+                var jsonText = event.data;
+                var jsonData = JSON.parse(jsonText);
+                self.postMessage(jsonData);
+            }
+    </pre>
+</body>
+</html>
