@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>动态脚本注入</title>
+</head>
+<body>
+    <pre>
+        这种技术克服了XHR的最大限制: 它能跨域请求数据.
+        这是一个Hack,你不需要实例化一个专用的对象,而可使用JavaScript创建一个新的脚本标签
+        并设置它的src为不同域的url
+
+        var scriptElement = document.createElement('script');
+        scriptElement.src = 'http://any-domain.com/javascript/lib.js';
+        document.getElementsByTagNames('head')[0].appendChild(scriptElement);
+    
+        但是与XHR相比,动态脚本注入提供的控制是有限的.
+        你不能设置请求的头部信息
+        参数传递也只能使用GET方式,而不是POST方式
+        你不能设置请求的超时处理和重试
+        事实上,就算失败了也不一定知道
+        你必须等待所有数据返回,才可以访问他们
+        你不能访问请求的头信息,也不能把整个响应消息作为字符串来处理
+
+        最后一点特别重要
+        因为响应消息作为脚本标签的源码,他必须是可执行的JavaScript代码
+        你不能使用纯XML 纯JSON或其他任何格式的数,无论哪种格式,都必须封装在一个回到函数中
+        
+        var scriptElement = document.createElement('script');
+        scriptElement.src = 'http://any-domain.com/javascript/lib.js';
+        document.getElementsByTagNames('head')[0].appendChild(scriptElement);
+        function jsonCallback(jsonString) {
+            var data = eval('('+ jsonString +')');
+            //处理数据
+        }
+
+        lib.js文件需要把数据封装在jsonCallback函数里
+        jsonCallback({'statue':1, 'colors': ['#fff', '#000', '#ff0000']});
+
+        尽管有这些限制,这项技术的速度却非常快
+        响应消息是作为JavaScript执行,而不是作为字符串需要进一步进行处理
+        正因为如此,他有钱里程为客户端获取并解析数据最快的方法
+
+        使用这种技术从哪些你无法直接控制的服务器上请求数据时需要小心
+        JavaScript没有任何权限和访问控制的概念, 因此你使用动态脚本注入添加到页面的任何代码都可以完全控制整个页面
+        包括修改任何内容, 把用户重定向到其他网站, 甚至跟踪用户在页面上的操作并发送数据到第三方平台
+        引入外部来源的代码时务必小心
+        
+    </pre>
+</body>
+</html>

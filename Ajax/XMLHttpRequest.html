@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>XMLHttpRequest</title>
+</head>
+<body>
+    <pre>
+        XMLHttpRequest是目前最常用的技术, 它允许异步发送和接收数据
+        所有的主流浏览器对它都提供了完善的支持, 而且他还能精确地控制发送请求和数据接收
+        你可以在请求中添加任何头信息和参数(POST和GET),并读取服务器返回的所有头信息,以及响应文本
+        接下来是一个使用范例
+        var url = '/data.php';
+        var params = [
+            'id=934875',
+            'limit=20'
+        ];
+        var req = new XMLHttpRequest();
+        req.onreadystatechange = function() {
+            if (req.readyState === 4) {
+                var responseHeaders = req.getAllResponseHeaders();  //获取响应头信息
+                var data = req.responseText;    //获取数据
+                //数据处理
+            }
+        }
+
+        req.open('GET', url + params.join('&'), true);
+        req.setRequestHeader('X-Requested-With', 'XMLHttpRequest'); //设置请求头信息
+        req.send(null); //发送一个请求
+
+
+        这个例子显示了如何从带有参数的URL请求数据,以及如何读取响应文本和头部信息
+        readyState值等于4表示整个响应已接收完毕, 可进行操作
+        通过监听readyState值等于3,你可以与正在传输中的服务器相应进行交互, 
+        可以通过readyState值等于3说明此事正在与服务器交互,
+        响应信息还在传输过程中.
+        这就是所谓的'流'(streaming),它是提升数据请求性能的强大工具:
+        req.onreadystatechange = function() {
+            if (req.readyState === 3) {     //接收到部分信息,但不是所有
+                var dataSoFar = req.responseText;
+                ...
+            } else if (req.readyState === 4) {  //所有信息接收完毕
+                var data = req.responseText;
+                ...
+            }
+        }
+
+        由于XHR提供了高级的控制,所以浏览器对其增加了一些限制
+        你不能使用XHR从外域请求数据,而且低版本的IE不仅不支持'流',也不提供readyState为3的状态
+        从服务器传回的数据当做字符串或者XML对象,这意味着处理大量数据将会很慢
+
+        尽管有这些缺点,XHR依然是最常用也最强大的数据请求技术,他应当作为你的首选
+
+        使用XHR时,POST和GET对比:
+            当使用XHR请求数据时,你需要在POST和GET之间做出选择.
+            对于那些不会改变服务器状态,只会获取数据(这被称为'幂等行为')的请求,应该使用GET
+            经GET请求的数据会被缓存起来,如果需要多次请求统一数据的话,他会有助于提升性能.
+            只有当请求的URL加上参数的长度接近或超过2048个字符时,才应该用POST获取数据
+            这是因为IE限制URL长度,过长时将会导致请求的URL被截断
+            
+    </pre>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>缓存</title>
+</head>
+<body>
+    <pre>
+        设置HTTP头部信息
+            如果你希望Ajax响应能够被浏览器缓存,那么你必须使用GET方法发出请求
+            但这还不够,你必须在响应中发送正确的HTTP头信息.
+            Expires头信息会告诉浏览器应该缓存响应多久.
+            它的值是一个日期,日期过期之后,对该URL的任何请求就不再从缓存中获取
+            而是会重新访问服务器.一个Expires头信息格式如下:
+            
+            Expires: Mon, 28 Jul 2014 23:30:00 GMT
+
+            这种特殊的Expires头信息告诉浏览器缓存此响应到2014年7月.
+            这种Expires头信息被称为'遥远的未来',它对那些从不改变的内容非常有用,比如图片和其他静态数据集
+
+            Expires头信息中的日期是GMT日期.
+
+        兼容老IE
+            function createXhrObject() {
+                var msxml_progid = [
+                    'MSXML2.XMLHTTP.6.0',
+                    'MSXML3.XMLHTTP',
+                    'Microsoft.XMLHTTP',    //不支持readyState3
+                    'MSXML2.XMLHTTP.3.0'    //不支持readyState3
+                ];
+                var xhr;
+                try {
+                    xhr = new XMLHTTPRequest();
+                } catch(ex) {
+                    for (var i = 0, len = msxml_progid.length; i < len; i++) {
+                        try {
+                            xhr = new ActiveXObject(msxml_progid[i]);
+                            break;
+                        } catch(ex) {}
+                    }
+                }
+                finally{
+                    return xhr;
+                }
+            }
+            
+    </pre>
+</body>
+</html>

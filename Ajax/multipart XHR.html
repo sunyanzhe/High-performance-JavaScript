@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>multipart XHR</title>
+</head>
+<body>
+    <pre>
+        现在提到的是一项最新的技术MXHR允许客户端只用一个HTTP请求就可以从服务器向客户端传送多个资源
+        他通过在服务端将资源(Css文件 HTML片段 JavaScript代码或base64编码的图片)打包成一个由双方约定的字符串分割的长字符串并发送到客户端
+        然后用JavaScript代码处理这个长字符串,并根据他的mime-type类型和传入的其他'头信息'解析出每个资源
+
+        首先,一个用来获取多张图片的请求发送到服务器
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'rollup_images.php', true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                splitImages(xhr.responseText);
+            }
+        };
+        xhr.send(null);
+
+        这是一个非常简单的请求
+        逆向rollup_images.php请求数据,一旦接受到返回结果,就把它交给函数splitImages处理
+        下一步,服务器读取图片并将他们转换为字符串
+        
+            //读取图片并将它们转换为base64编码的字符串
+        $iamges = array('kitten.jpg', 'sunset.jpg', 'baby.jpg');
+        foreach($images as $iamge) {
+            $image_fh = fopen($image, 'r');
+            $image_data = fread($image_fh, filesize($image));
+            fclose($image_fh);
+                $payloads[] = base64_encode($image_data);
+        }
+            //把字符串合并成一个长字符串,然后输出他
+        $newline = chr(1);
+        echo implode($newline, $payloads);
+
+        这段PHP代码读取了三张图片,并把它们转换为base64编码的长字符串.
+        他们之间用一个简单的Unicode编码的字符1链接,然后返回给客户端
+
+        一旦数据到达客户端,该数据由splitImages函数来处理
+        function splitImages(imageString) {
+            var imageData = imageString.split('\u0001');
+            var imageElemet;
+            for (var i = 0, len = imageData.length; i < len; i++) {
+                imageElement = document.createElement('img');
+                imageElement.src = 'data:image/jpeg;base64' + imageData[i];
+                document.getElementById('container').appendChild(imageElement);
+            }
+        }
+
+        此函数将连接后的字符串分解成三段
+        每段用来创建一个图片元素,然后将图片元素插入页面中
+        图片不是有base64字符串转换成二进制,而是使用data:URL的方式创建,并制定mime-type为images/jpeg
+
+        最终的结果是:在一次HTTP请求中向浏览器传送了三张图片
+        你也可以传送20张或者100张图片,这样的话响应信息会更大,但仍然只用了一次HTTP请求
+        当然,这种方式也可以扩展到其他资源的类型
+        JavaScript文件 Css文件 HTML片段以及多种类型的图片都能合并成一次响应
+        任何数据类型都可以被JavaScript作为字符串送达
+        下面的函数用于将JavaScript代码 Css样式和图片转换为浏览器可用的资源:
+        function handlerImageData(data, mimeType) {
+            var img = document.createElement('img');
+            img.src = 'data:' + mimeType + ";base64" + data;
+            return img;
+        }
+        function handleCss(data) {
+            var style = document.createElement('style');
+            style.type = 'text/css';
+            var node = document.createTextNode(data);
+            style.appendChild(node);
+            return style;
+        }
+        function handleJavaScript(data) {
+            eval(data);
+        }
+
+        由于MXHR响应消息的体积越来愈大,因此有必要在每个资源收集到时立刻处理
+        而不是等到整个响应消息接受完成
+        这可以通过监听readyState为3的状态来实现
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'rollup_images.php', true);
+        xhr.onreadystatechange = readyStatehandler;
+        xhr.send(null);
+        function readyStatehandler() {
+            if (xhr.readyState === 3 && getLatesPacketInterval === null) {
+                //开始轮询
+                getLatestPacketInterval = window.setInterval(function() {
+                    getlatestPacket()
+                }, 15)
+            }
+            if (xhr.readyState === 4) {
+                //停止轮询
+                clearInterval(getLatestPacketInterval);
+                //获取最后一个数据包
+                getLatestPacket();
+            }
+        }
+        function getLatestPacket() {
+            var length = xhr.responseText.length;
+            var packet = xhr.responseText.subString(lastLength, length)
+            processPacket(packet);
+            lastLength = length;
+        }
+
+        当readyState为3状态,第一次出发时,启动一个定时器,每隔15毫秒检查一次响应中的新数据
+        数据片段被收集起来,直到发现一个翻个福,然后就把分隔符之前收集的所有数据作为一个完整的资源进行处理
+        
+        
+    </pre>
+</body>
+</html>
