@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>避免重复工作</title>
+</head>
+<body>
+    <pre>
+        function addHandler(target, eventType, handler) {
+            if (target.addEventListener) {  //DOM2 Events
+                target.addEventListener(eventType, handler, false);
+            } else {
+                target.attachEvent('on' + eventType, handler);
+            }
+        }
+        乍一看这些代码似乎已经过充分优化
+        隐藏的性能问题在于每次函数调用是都做了重复的工作
+        因为每次的检查过程都相同: 看看指定的方法是否存在
+        用户不可嫩恶搞在页面加载完后改变浏览器
+        那么这次检查就是重复的
+        如果在第一次调用addHandler()时就确定addEventListener()是存在的
+        那么随后每次调用时他都会存在
+        每次调用一个函数都重复相同的工作是一种浪费
+
+        延迟加载
+        function addHandler(target, eventType, handler) {
+            if (target.addEventListener) {
+                addHandler = function(target, eventType, handler) {
+                    target.addEventListener(eventType, handler, false);
+                };
+            } else {
+                addHandler = function(target, eventType, handler) {
+                    target.attachEvent('on' + eventType, handler);
+                }
+            }
+            addHandler(target, eventType, handler);
+        }
+        先检查决定使用哪种方法去绑定事件
+        然后原始函数被正确操作的函数覆盖
+        最后调用新的函数, 并传入原始参数
+        
+        调用延迟函数时,第一次总会消耗较长时间,因为它必须运行检测接着在调用另一个函数完成任务
+        但随后调用相同的函数会更快,因为不需要在执行检测逻辑
+        当一个函数在页面中不会立刻调用时,延迟加载是最好的选择
+
+        条件预加载
+        var addHandler = document.body.addEventListener ? 
+                         function(target, eventType, handler) {
+                             target.addEventListener(eventType, handler, false);
+                         } :
+                         function(target, eventType, handler) {
+                             target.attachEvent('on' + eventType, handler);
+                         };
+        条件预加载确保所有函数调用消耗的时间相同,
+        其代价是需要在脚本加载时检测,而不是加载后
+        预加载适用于一个函数马上就要被用到, 并且在整个页面的生命周期频繁出现的场合
+    </pre>
+    <script>
+        function addHandler(target, eventType, handler) {
+            if (target.addEventListener) {  //DOM2 Events
+                target.addEventListener(eventType, handler, false);
+            } else {
+                target.attachEvent('on' + eventType, handler);
+            }
+        }
+
+        //延迟加载
+        function addHandler(target, eventType, handler) {
+            if (target.addEventListener) {
+                addHandler = function(target, eventType, handler) {
+                    target.addEventListener(eventType, handler, false);
+                };
+            } else {
+                addHandler = function(target, eventType, handler) {
+                    target.attachEvent('on' + eventType, handler);
+                }
+            }
+            addHandler(target, eventType, handler);
+        }
+        
+        //条件预加载
+        var addHandler = document.body.addEventListener ? 
+                         function(target, eventType, handler) {
+                             target.addEventListener(eventType, handler, false);
+                         } :
+                         function(target, eventType, handler) {
+                             target.attachEvent('on' + eventType, handler);
+                         };
+    </script>
+</body>
+</html>

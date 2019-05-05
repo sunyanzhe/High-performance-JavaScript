@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>避免双重求值</title>
+</head>
+<body>
+    <pre>
+        JavaScript 像其他很多脚本语言一样, 允许你在程序中提取一个包含代码的字符串,然后动态执行他
+        有四种标准方法可以实现: eval() Function()构造函数 setTimeout setInterval
+        其中每个方法都允许你传入一个JavaScript代码字符串并执行它
+
+        双重求值是一个代价昂贵的操作,他比直接包含的代码执行速度慢很多
+        其所消耗时间存在巨大差异是因为,每次调用eval时都要创建一个新的解释器/编译器实例
+        同样的过程也发生在使用Function() setTimeout setInterval时 这是必然使得代码执行的速度编码
+        
+    </pre>
+    <script>
+        var num1 = 5,
+            num2 = 5,
+            //eval()执行代码字符串
+            result = eval('num1 + num2'),
+            //Function()执行代码字符串
+            sum = new Function('arg1', 'arg2', 'return arg1 + arg2');
+        
+        //setTimeout执行代码字符串
+        setTimeout('sum = num1 + num2', 100);
+        //setInterval执行代码字符串
+        setInterval('sum = num1 + num2', 100);
+
+
+    </script>
+</body>
+</html>
